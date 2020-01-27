@@ -19,6 +19,15 @@ public class Expression {
         return ((c >= '0' && c <= '9') || c == '.');
     }
 
+    private static BigDecimal power(BigDecimal a, BigDecimal b) {
+        boolean inv = (b.compareTo(BigDecimal.ZERO) < 0);
+        if (inv)
+            b = b.negate();
+        BigDecimal tmpa = a.pow(b.intValue());
+        BigDecimal tmpb = BigDecimal.valueOf(Math.pow(a.doubleValue(), b.remainder(BigDecimal.ONE).doubleValue()));
+        return (inv? BigDecimal.ONE.divide(tmpa.multiply(tmpb), MathContext.DECIMAL128): tmpa.multiply(tmpb));
+    }
+
     private static BigDecimal solvePostfix(ArrayList<Integer> postNote, ArrayList<BigDecimal> numList) {
         Stack<BigDecimal> boya = new Stack<>();
         for (int i = 0; i < postNote.size(); i++) {
@@ -28,6 +37,14 @@ public class Expression {
             else {
                 BigDecimal a, b;
                 switch ((char)at) {
+                    case '^':
+                        b = boya.peek();
+                        boya.pop();
+                        a = boya.peek();
+                        boya.pop();
+                        boya.push(power(a, b));
+                        break;
+
                     case '@':
                         a = boya.peek();
                         boya.pop();
@@ -141,11 +158,23 @@ public class Expression {
                 nxtBro = false;
                 nxtBrc = (lvl > 0);
             }
-            else if (at == '+' || at == '-' || at == '*' || at == '/') {
-                if (at == '*' || at == '/' || at == '&') {
+            else if (at == '+' || at == '-' || at == '*' || at == '/' || at == '^') {
+                if (at == '^') {
                     if (!nxt2op)
                         throw new ArithmeticException("not expecting bin operator");
-                    while (chars.peek() == '*' || chars.peek() == '/' || chars.peek() == '&') {
+                    chars.push(at);
+
+                    nxtNum = true;
+                    nxt1op = false;
+                    nxt2op = false;
+                    nxtBro = true;
+                    nxtBrc = false;
+                }
+                if (at == '*' || at == '/') {
+                    if (!nxt2op)
+                        throw new ArithmeticException("not expecting bin operator");
+                    while (chars.peek() == '^' || chars.peek() == '@' || chars.peek() == '*' ||
+                            chars.peek() == '/') {
                         postfix.add(chars.peek().hashCode());
                         chars.pop();
                     }
@@ -159,8 +188,8 @@ public class Expression {
                 }
                 else if (at == '+' || at == '-') {
                     if (nxt2op) {
-                        while (chars.peek() == '*' || chars.peek() == '/' || chars.peek() == '+' ||
-                                chars.peek() == '-' || chars.peek() == '@') {
+                        while (chars.peek() == '^' || chars.peek() == '@' || chars.peek() == '*' ||
+                                chars.peek() == '/' || chars.peek() == '+' || chars.peek() == '-') {
                             postfix.add(chars.peek().hashCode());
                             chars.pop();
                         }
@@ -176,7 +205,7 @@ public class Expression {
                         if (!nxt1op)
                             throw new ArithmeticException("not expecting operator");
                         if (at == '-') {
-                            while (chars.peek() == '@') {
+                            while (chars.peek() == '^') {
                                 postfix.add(chars.peek().hashCode());
                                 chars.pop();
                             }

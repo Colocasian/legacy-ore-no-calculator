@@ -27,6 +27,12 @@ mvn javafx:run
 
 And it should startup.
 
+On an update, run the following command instead,
+
+```sh
+mvn clean javafx:run
+```
+
 ## TODO
 
 - [x] Unary operators

@@ -59,15 +59,27 @@ public class App extends Application {
         Button btnSub = new Button("-");
         Button btnMul = new Button("*");
         Button btnDiv = new Button("/");
+        Button btnPow = new Button("^");
         btnAdd.setPrefSize(unit, unit);
         btnSub.setPrefSize(unit, unit);
         btnMul.setPrefSize(unit, unit);
         btnDiv.setPrefSize(unit, unit);
+        btnPow.setPrefSize(unit, unit);
 
         btnAdd.setOnAction(e -> { tfInput.appendText("+"); });
         btnSub.setOnAction(e -> { tfInput.appendText("-"); });
         btnMul.setOnAction(e -> { tfInput.appendText("*"); });
         btnDiv.setOnAction(e -> { tfInput.appendText("/"); });
+        btnPow.setOnAction(e -> { tfInput.appendText("^"); });
+
+        // Parentheses key
+        Button btnBro = new Button("(");
+        Button btnBrc = new Button(")");
+        btnBro.setPrefSize(unit, unit);
+        btnBrc.setPrefSize(unit, unit);
+
+        btnBro.setOnAction(e -> { tfInput.appendText("("); });
+        btnBrc.setOnAction(e -> { tfInput.appendText(")"); });
 
         // Equals key and Ans key
         Button btnEqu = new Button("=");
@@ -129,6 +141,10 @@ public class App extends Application {
         grid.add(btnSub, 4, 4, 1, 1);
         grid.add(btnMul, 3, 3, 1, 1);
         grid.add(btnDiv, 4, 3, 1, 1);
+        grid.add(btnPow, 5, 4, 1, 1);
+
+        grid.add(btnBro, 5, 2, 1, 1);
+        grid.add(btnBrc, 5, 3, 1, 1);
 
         grid.add(btnEqu, 3, 5, 1, 1);
         grid.add(btnAns, 4, 5, 1, 1);
@@ -136,8 +152,8 @@ public class App extends Application {
         grid.add(btnAC, 3, 2, 1, 1);
         grid.add(btnCE, 4, 2, 1, 1);
 
-        grid.add(tfInput, 0, 0, 3, 1);
-        grid.add(tfOutput, 0, 1, 5, 1);
+        grid.add(tfInput, 0, 0, 4, 1);
+        grid.add(tfOutput, 0, 1, 6, 1);
 
         Scene scene = new Scene(grid);
         stage.setScene(scene);
