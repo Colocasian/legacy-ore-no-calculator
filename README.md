@@ -36,6 +36,7 @@ mvn clean javafx:run
 ## TODO
 
 - [x] Unary operators
+- [ ] Exponent representation
 - [ ] Variable suppport
 - [ ] Functions
 - [ ] Scientific (like) on-screen key layout

@@ -44,15 +44,13 @@ public class App extends Application {
                 tfInput.appendText(Integer.toString(x));
             });
         }
+        btnNums[0].setPrefWidth(2 * unit + 4);
 
         // Decimal point and Exponent keys
         Button btnDot = new Button(".");
-        Button btnExp = new Button("EXP");
         btnDot.setPrefSize(unit, unit);
-        btnExp.setPrefSize(unit, unit);
 
         btnDot.setOnAction(e -> { tfInput.appendText("."); });
-        btnExp.setOnAction(e -> { tfInput.appendText("e"); });
 
         // Common operators
         Button btnAdd = new Button("+");
@@ -123,7 +121,7 @@ public class App extends Application {
         grid.setHgap(4);
 
         // Setting the keys
-        grid.add(btnNums[0], 0, 5, 1, 1);
+        grid.add(btnNums[0], 0, 5, 2, 1);
         grid.add(btnNums[1], 0, 4, 1, 1);
         grid.add(btnNums[2], 1, 4, 1, 1);
         grid.add(btnNums[3], 2, 4, 1, 1);
@@ -134,8 +132,7 @@ public class App extends Application {
         grid.add(btnNums[8], 1, 2, 1, 1);
         grid.add(btnNums[9], 2, 2, 1, 1);
 
-        grid.add(btnDot, 1, 5, 1, 1);
-        grid.add(btnExp, 2, 5, 1, 1);
+        grid.add(btnDot, 2, 5, 1, 1);
 
         grid.add(btnAdd, 3, 4, 1, 1);
         grid.add(btnSub, 4, 4, 1, 1);
