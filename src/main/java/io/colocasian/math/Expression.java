@@ -94,7 +94,9 @@ public class Expression {
         return boya.peek();
     }
 
-    public BigDecimal evaluate(String infix) throws ArithmeticException {
+    public BigDecimal evaluate(String infix) throws ArithmeticException, NoSuchElementException {
+        if (infix.trim().isEmpty())
+            throw new ArithmeticException("empty string passed");
         ArrayList<BigDecimal> nums = new ArrayList<>();
         Stack<Character> chars = new Stack<>();
         chars.push('(');
