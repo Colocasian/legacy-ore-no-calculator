@@ -40,5 +40,4 @@ mvn clean javafx:run
 - [x] Variable suppport
 - [ ] Functions
 - [x] Support for multiple panels
-- [x] Scientific (like) on-screen key layout
 
