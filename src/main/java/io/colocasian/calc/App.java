@@ -42,6 +42,9 @@ public class App extends Application {
         activeGrid = GridMode.REG;
         calMode = CalculatorMode.NORMAL;
 
+        solver.setVariable("PI", BigDecimal.valueOf(Math.PI));
+        solver.setVariable("E", BigDecimal.valueOf(Math.E));
+
         int unit = 48;
         int gridGap = 4;
         int gridPad = 8;
