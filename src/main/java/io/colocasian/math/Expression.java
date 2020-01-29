@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Stack;
@@ -17,6 +18,10 @@ public class Expression {
 
     private static boolean isNum(char c) {
         return ((c >= '0' && c <= '9') || c == '.');
+    }
+
+    private static boolean isVar(char c) {
+        return ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '_'));
     }
 
     private static BigDecimal power(BigDecimal a, BigDecimal b) {
@@ -144,12 +149,33 @@ public class Expression {
             else if (isNum(at)) {
                 if (!nxtNum)
                     throw new ArithmeticException("not expecting number");
-                int j = i;
+                int j = i+1;
                 while (j < infix.length() && isNum(infix.charAt(j)))
                     j++;
 
                 postfix.add(-nums.size());
                 nums.add(new BigDecimal(infix.substring(i, j)));
+                i = j-1;
+
+                nxtNum = false;
+                nxt1op = false;
+                nxt2op = true;
+                nxtBro = false;
+                nxtBrc = (lvl > 0);
+            }
+            else if (isVar(at)) {
+                if (!nxtNum)
+                    throw new ArithmeticException("not expecting variable name");
+                int j = i+1;
+                while (j < infix.length() && (isVar(infix.charAt(j)) ||
+                            (infix.charAt(j) >= '0' && infix.charAt(j) <= '9')))
+                    j++;
+
+                String varName = infix.substring(i, j);
+                if (!vars.containsKey(varName))
+                    throw new NoSuchElementException("no such variable exists");
+                postfix.add(-nums.size());
+                nums.add(vars.get(varName));
                 i = j-1;
 
                 nxtNum = false;
@@ -235,10 +261,12 @@ public class Expression {
     }
 
     public boolean setVariable(String name, BigDecimal num) {
-        Pattern r = Pattern.compile("[^A-Za-z_]");
-        Matcher m = r.matcher(name);
-        if (m.lookingAt())
+        if (name.isEmpty() || (!isVar(name.charAt(0))))
             return false;
+        for (int i = 1; i < name.length(); i++) {
+            if ((!isVar(name.charAt(i))) && (name.charAt(i) < '0' || name.charAt(i) > '9'))
+                return false;
+        }
         vars.put(name, num);
         return true;
     }

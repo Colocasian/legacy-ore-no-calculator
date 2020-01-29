@@ -1,6 +1,8 @@
 package io.colocasian.calc;
 
 import io.colocasian.math.Expression;
+import java.math.BigDecimal;
+import java.util.NoSuchElementException;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -17,15 +19,29 @@ import javafx.stage.Stage;
  * JavaFX App
  */
 public class App extends Application {
-    private static Expression solver = new Expression();
+    private enum CalculatorMode {
+        NORMAL, VAR;
+    }
+
+    private enum GridMode {
+        REG, SCI;
+    }
+
+    private static Expression solver;
     private boolean sPanelOff;
-    private int activeGrid;
+    private CalculatorMode calMode;
+    private GridMode activeGrid;
 
     @Override
     public void start(Stage stage) {
         stage.setTitle("OreNo Calculator [GUI]");
 
         // Constants section
+        solver = new Expression();
+        sPanelOff = true;
+        activeGrid = GridMode.REG;
+        calMode = CalculatorMode.NORMAL;
+
         int unit = 48;
         int gridGap = 4;
         int gridPad = 8;
@@ -117,16 +133,26 @@ public class App extends Application {
         btnAns.setPrefSize(unit, unit);
 
         btnEqu.setOnAction(e -> {
-            try {
-                tfOutput.setText(Double.toString(solver.evaluate(tfInput.getText()).doubleValue()));
-            }
-            catch (ArithmeticException aerror) {
-                tfOutput.setText("EE:" + aerror.getMessage());
-            }
-            catch (Exception what) {
-                tfOutput.setText("UE:" + what.getMessage());
+            if (calMode == CalculatorMode.VAR) { tfInput.appendText("="); }
+            else {
+                try {
+                    BigDecimal currentAnswer = solver.evaluate(tfInput.getText());
+                    solver.setVariable("_", currentAnswer);
+                    tfOutput.setText(Double.toString(currentAnswer.doubleValue()));
+                }
+                catch (ArithmeticException aerror) {
+                    tfOutput.setText("AE:" + aerror.getMessage());
+                }
+                catch (NoSuchElementException verror) {
+                    tfOutput.setText("VE:" + verror.getMessage());
+                }
+                catch (Exception what) {
+                    tfOutput.setText("UE:" + what.getMessage());
+                }
             }
         });
+
+        btnAns.setOnAction(e -> { tfInput.appendText("_"); });
 
         // AC and CE
         Button btnAC = new Button("AC");
@@ -200,6 +226,43 @@ public class App extends Application {
         Button btnG = new Button("G");
         btnG.setPrefSize(unit, unit);
 
+        Button btnVar = new Button("Var");
+        btnVar.setPrefSize(unit, unit);
+        
+        btnVar.setOnAction(e -> {
+            if (calMode == CalculatorMode.VAR) {
+                String[] expr = tfInput.getText().split("=", 2);
+
+                try {
+                    String varGiven = expr[0].trim();
+                    if (solver.setVariable(varGiven, solver.evaluate(expr[1]))) {
+                        tfOutput.setText("Variable \"" + varGiven + "\" successfully assigned");
+                        tfInput.clear();
+                        calMode = CalculatorMode.NORMAL;
+                    }
+                    else {
+                        tfOutput.setText("Invalid variable name, try again...");
+                    }
+                }
+                catch (ArithmeticException aerror) {
+                    tfOutput.setText("Invalid Expression, try again...");
+                }
+                catch (NoSuchElementException verror) {
+                    tfOutput.setText("Non-existent variables referenced, try again...");
+                }
+                catch (Exception what) {
+                    tfOutput.setText("What? " + what.getMessage());
+                }
+
+            }
+            else {
+                calMode = CalculatorMode.VAR;
+                tfInput.clear();
+                tfOutput.setText("Enter a variable name, followed by an '=' sign, " +
+                        "then the expression to be entered. When completed, press the var key again...");
+            }
+        });
+
         // Grid Panel
         GridPane sciGrid = new GridPane();
         sciGrid.setPadding(new Insets(0, gridPad, gridPad, gridPad));
@@ -210,7 +273,7 @@ public class App extends Application {
         sciGrid.add(btnJ, 0, 3, 1, 1);
         sciGrid.add(btnU, 0, 2, 1, 1);
         sciGrid.add(btnS, 0, 1, 1, 1);
-        sciGrid.add(btnT, 0, 0, 1, 1);
+        sciGrid.add(btnVar, 0, 0, 1, 1);
         sciGrid.add(btnR, 1, 0, 1, 1);
         sciGrid.add(btnY, 2, 0, 1, 1);
         sciGrid.add(btnI, 3, 0, 1, 1);
@@ -221,8 +284,6 @@ public class App extends Application {
         BorderPane panel = new BorderPane();
 
         // Side panel buttons and layout ------------(NEW LAYOUT)---------------
-        sPanelOff = true;
-        activeGrid = 0;
 
         Button btnReg = new Button("Reg");
         Button btnSci = new Button("Sci");
@@ -230,16 +291,16 @@ public class App extends Application {
         btnSci.setPrefSize(sPanelWidth, sPanelHeight);
 
         btnReg.setOnAction(e -> {
-            if (activeGrid != 0) {
+            if (activeGrid != GridMode.REG) {
                 panel.setCenter(grid);
-                activeGrid = 0;
+                activeGrid = GridMode.REG;
             }
         });
 
         btnSci.setOnAction(e -> {
-            if (activeGrid != 1) {
+            if (activeGrid != GridMode.SCI) {
                 panel.setCenter(sciGrid);
-                activeGrid = 1;
+                activeGrid = GridMode.SCI;
             }
         });
 
@@ -248,13 +309,13 @@ public class App extends Application {
 
         btnCyc.setOnAction(e -> {
             switch (activeGrid) {
-                case 0:
+                case REG:
                     panel.setCenter(sciGrid);
-                    activeGrid = 1;
+                    activeGrid = GridMode.SCI;
                     break;
-                case 1:
+                case SCI:
                     panel.setCenter(grid);
-                    activeGrid = 0;
+                    activeGrid = GridMode.REG;
                     break;
             }
         });
@@ -291,10 +352,10 @@ public class App extends Application {
         panel.setTop(display);
         // panel.setCenter(sciGrid);
         switch (activeGrid) {
-            case 0:
+            case REG:
                 panel.setCenter(grid);
                 break;
-            case 1:
+            case SCI:
                 panel.setCenter(sciGrid);
                 break;
             default:

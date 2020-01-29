@@ -37,7 +37,7 @@ mvn clean javafx:run
 
 - [x] Unary operators
 - [ ] Exponent representation
-- [ ] Variable suppport
+- [x] Variable suppport
 - [ ] Functions
 - [x] Support for multiple panels
 - [x] Scientific (like) on-screen key layout
