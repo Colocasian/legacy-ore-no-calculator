@@ -39,5 +39,6 @@ mvn clean javafx:run
 - [ ] Exponent representation
 - [ ] Variable suppport
 - [ ] Functions
-- [ ] Scientific (like) on-screen key layout
+- [x] Support for multiple panels
+- [x] Scientific (like) on-screen key layout
 
