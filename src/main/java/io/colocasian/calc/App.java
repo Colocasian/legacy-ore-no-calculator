@@ -142,6 +142,7 @@ public class App extends Application {
                     BigDecimal currentAnswer = solver.evaluate(tfInput.getText());
                     solver.setVariable("_", currentAnswer);
                     tfOutput.setText(Double.toString(currentAnswer.doubleValue()));
+                    tfInput.clear();
                 }
                 catch (ArithmeticException aerror) {
                     tfOutput.setText("AE:" + aerror.getMessage());
