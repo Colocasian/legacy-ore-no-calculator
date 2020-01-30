@@ -243,6 +243,7 @@ public class App extends Application {
                         tfOutput.setText("Variable \"" + varGiven + "\" successfully assigned");
                         tfInput.clear();
                         calMode = CalculatorMode.NORMAL;
+                        btnVar.setText("Var");
                     }
                     else {
                         tfOutput.setText("Invalid variable name, try again...");
@@ -263,7 +264,8 @@ public class App extends Application {
                 calMode = CalculatorMode.VAR;
                 tfInput.clear();
                 tfOutput.setText("Enter a variable name, followed by an '=' sign, " +
-                        "then the expression to be entered. When completed, press the var key again...");
+                        "then the expression to be entered. When completed, press the set key again...");
+                btnVar.setText("Set");
             }
         });
 
