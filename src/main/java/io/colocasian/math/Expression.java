@@ -248,13 +248,6 @@ public class Expression {
             chars.pop();
         }
 
-        for (int i = 0; i < postfix.size(); i++) {
-            if (postfix.get(i) <= 0)
-                System.out.println(nums.get(-postfix.get(i)));
-            else
-                System.out.println((char)(postfix.get(i).intValue()));
-        }
-
         return solvePostfix(postfix, nums);
     }
 
