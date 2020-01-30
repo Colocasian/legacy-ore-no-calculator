@@ -7,6 +7,7 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -243,6 +244,7 @@ public class App extends Application {
                         tfOutput.setText("Variable \"" + varGiven + "\" successfully assigned");
                         tfInput.clear();
                         calMode = CalculatorMode.NORMAL;
+                        btnVar.setText("Var");
                     }
                     else {
                         tfOutput.setText("Invalid variable name, try again...");
@@ -263,7 +265,8 @@ public class App extends Application {
                 calMode = CalculatorMode.VAR;
                 tfInput.clear();
                 tfOutput.setText("Enter a variable name, followed by an '=' sign, " +
-                        "then the expression to be entered. When completed, press the var key again...");
+                        "then the expression to be entered. When completed, press the set key again...");
+                btnVar.setText("Set");
             }
         });
 
@@ -354,7 +357,6 @@ public class App extends Application {
         sciGrid.add(btnSwp[1], 5, 3, 1, 1);
 
         panel.setTop(display);
-        // panel.setCenter(sciGrid);
         switch (activeGrid) {
             case REG:
                 panel.setCenter(grid);
@@ -367,6 +369,15 @@ public class App extends Application {
                 break;
         }
         Scene scene = new Scene(panel);
+
+        // Pressing Return submits expression in normal mode
+        scene.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                if (calMode == CalculatorMode.NORMAL)
+                    btnEqu.fire();
+            }
+        });
+
         stage.setScene(scene);
         stage.show();
     }
