@@ -11,7 +11,6 @@ import java.util.Stack;
 
 public class Expression {
     private HashMap<String, BigDecimal> vars;
-    private HashMap<String, String> vars;
 
     public Expression() {
         this.vars = new HashMap<>();
@@ -30,11 +29,8 @@ public class Expression {
         if (inv)
             b = b.negate();
         BigDecimal tmpa = a.pow(b.intValue());
-        BigDecimal tmpb = BigDecimal.valueOf(Math.pow(a.doubleValue(),
-                    b.remainder(BigDecimal.ONE).doubleValue()));
-
-        return (inv? BigDecimal.ONE.divide(tmpa.multiply(tmpb),
-                    MathContext.DECIMAL128): tmpa.multiply(tmpb));
+        BigDecimal tmpb = BigDecimal.valueOf(Math.pow(a.doubleValue(), b.remainder(BigDecimal.ONE).doubleValue()));
+        return (inv? BigDecimal.ONE.divide(tmpa.multiply(tmpb), MathContext.DECIMAL128): tmpa.multiply(tmpb));
     }
 
     private static BigDecimal solvePostfix(ArrayList<Integer> postNote, ArrayList<BigDecimal> numList) {
