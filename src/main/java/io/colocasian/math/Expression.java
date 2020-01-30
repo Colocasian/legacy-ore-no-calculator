@@ -1,7 +1,5 @@
 package io.colocasian.math;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
@@ -10,7 +8,7 @@ import java.util.regex.Pattern;
 import java.util.Stack;
 
 public class Expression {
-    private HashMap<String, BigDecimal> vars;
+    private HashMap<String, Double> vars;
 
     public Expression() {
         this.vars = new HashMap<>();
@@ -24,38 +22,27 @@ public class Expression {
         return ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '_'));
     }
 
-    private static BigDecimal power(BigDecimal a, BigDecimal b) {
-        boolean inv = (b.compareTo(BigDecimal.ZERO) < 0);
-        if (inv)
-            b = b.negate();
-        BigDecimal tmpa = a.pow(b.intValue());
-        BigDecimal tmpb = BigDecimal.valueOf(Math.pow(a.doubleValue(),
-                    b.remainder(BigDecimal.ONE).doubleValue()));
-        return (inv? BigDecimal.ONE.divide(tmpa.multiply(tmpb), MathContext.DECIMAL128):
-                tmpa.multiply(tmpb));
-    }
-
-    private static BigDecimal solvePostfix(ArrayList<Integer> postNote, ArrayList<BigDecimal> numList) {
-        Stack<BigDecimal> boya = new Stack<>();
+    private static double solvePostfix(ArrayList<Integer> postNote, ArrayList<Double> numList) {
+        Stack<Double> boya = new Stack<>();
         for (int i = 0; i < postNote.size(); i++) {
             int at = postNote.get(i);
             if (at <= 0)
                 boya.push(numList.get(-at));
             else {
-                BigDecimal a, b;
+                double a, b;
                 switch ((char)at) {
                     case '^':
                         b = boya.peek();
                         boya.pop();
                         a = boya.peek();
                         boya.pop();
-                        boya.push(power(a, b));
+                        boya.push(Math.pow(a, b));
                         break;
 
                     case '@':
                         a = boya.peek();
                         boya.pop();
-                        boya.push(a.negate());
+                        boya.push(-a);
                         break;
 
                     case '*':
@@ -63,7 +50,7 @@ public class Expression {
                         boya.pop();
                         a = boya.peek();
                         boya.pop();
-                        boya.push(a.multiply(b));
+                        boya.push(a * b);
                         break;
 
                     case '/':
@@ -71,7 +58,7 @@ public class Expression {
                         boya.pop();
                         a = boya.peek();
                         boya.pop();
-                        boya.push(a.divide(b, MathContext.DECIMAL128));
+                        boya.push(a / b);
                         break;
 
                     case '+':
@@ -79,7 +66,7 @@ public class Expression {
                         boya.pop();
                         a = boya.peek();
                         boya.pop();
-                        boya.push(a.add(b));
+                        boya.push(a + b);
                         break;
 
                     case '-':
@@ -87,7 +74,7 @@ public class Expression {
                         boya.pop();
                         a = boya.peek();
                         boya.pop();
-                        boya.push(a.subtract(b));
+                        boya.push(a - b);
                         break;
                 }
             }
@@ -96,10 +83,10 @@ public class Expression {
         return boya.peek();
     }
 
-    public BigDecimal evaluate(String infix) throws ArithmeticException, NoSuchElementException {
+    public double evaluate(String infix) throws ArithmeticException, NoSuchElementException {
         if (infix.trim().isEmpty())
             throw new ArithmeticException("empty string passed");
-        ArrayList<BigDecimal> nums = new ArrayList<>();
+        ArrayList<Double> nums = new ArrayList<>();
         Stack<Character> chars = new Stack<>();
         chars.push('(');
         
@@ -158,7 +145,7 @@ public class Expression {
                     j++;
 
                 postfix.add(-nums.size());
-                nums.add(new BigDecimal(infix.substring(i, j)));
+                nums.add(Double.parseDouble(infix.substring(i, j)));
                 i = j-1;
 
                 nxtNum = false;
@@ -261,10 +248,17 @@ public class Expression {
             chars.pop();
         }
 
+        for (int i = 0; i < postfix.size(); i++) {
+            if (postfix.get(i) <= 0)
+                System.out.println(nums.get(-postfix.get(i)));
+            else
+                System.out.println((char)(postfix.get(i).intValue()));
+        }
+
         return solvePostfix(postfix, nums);
     }
 
-    public boolean setVariable(String name, BigDecimal num) {
+    public boolean setVariable(String name, double num) {
         if (name.isEmpty() || (!isVar(name.charAt(0))))
             return false;
         for (int i = 1; i < name.length(); i++) {

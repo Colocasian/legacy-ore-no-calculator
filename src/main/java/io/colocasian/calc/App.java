@@ -1,7 +1,6 @@
 package io.colocasian.calc;
 
 import io.colocasian.math.Expression;
-import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -43,8 +42,8 @@ public class App extends Application {
         activeGrid = GridMode.REG;
         calMode = CalculatorMode.NORMAL;
 
-        solver.setVariable("PI", BigDecimal.valueOf(Math.PI));
-        solver.setVariable("E", BigDecimal.valueOf(Math.E));
+        solver.setVariable("PI", Math.PI);
+        solver.setVariable("E", Math.E);
 
         int unit = 48;
         int gridGap = 4;
@@ -73,8 +72,6 @@ public class App extends Application {
         // Output field
         TextField tfOutput = new TextField();
         tfOutput.setFont(Font.font("monospace", FontWeight.BOLD, 26));
-        //tfOutput.setPrefWidth(6 * unit + 5 * gridGap);
-        //tfOutput.setMaxWidth(6 * unit + 5 * gridGap);
         tfOutput.setMinWidth(6 * unit + 5 * gridGap);
         tfOutput.setEditable(false);
 
@@ -140,9 +137,9 @@ public class App extends Application {
             if (calMode == CalculatorMode.VAR) { tfInput.appendText("="); }
             else {
                 try {
-                    BigDecimal currentAnswer = solver.evaluate(tfInput.getText());
+                    double currentAnswer = solver.evaluate(tfInput.getText());
                     solver.setVariable("_", currentAnswer);
-                    tfOutput.setText(Double.toString(currentAnswer.doubleValue()));
+                    tfOutput.setText(Double.toString(currentAnswer));
                     tfInput.clear();
                 }
                 catch (ArithmeticException aerror) {
@@ -218,8 +215,6 @@ public class App extends Application {
         btnU.setPrefSize(unit, unit);
         Button btnS = new Button("S");
         btnS.setPrefSize(unit, unit);
-        Button btnT = new Button("T");
-        btnT.setPrefSize(unit, unit);
         Button btnR = new Button("R");
         btnR.setPrefSize(unit, unit);
         Button btnY = new Button("Y");
@@ -236,28 +231,36 @@ public class App extends Application {
         
         btnVar.setOnAction(e -> {
             if (calMode == CalculatorMode.VAR) {
-                String[] expr = tfInput.getText().split("=", 2);
+                if (!tfInput.getText().contains("=")) {
+                    tfInput.clear();
+                    tfOutput.setText("Op cancelled");
+                    btnVar.setText("Var");
+                    calMode = CalculatorMode.NORMAL;
+                }
+                else {
+                    String[] expr = tfInput.getText().split("=", 2);
 
-                try {
-                    String varGiven = expr[0].trim();
-                    if (solver.setVariable(varGiven, solver.evaluate(expr[1]))) {
-                        tfOutput.setText("Variable \"" + varGiven + "\" successfully assigned");
-                        tfInput.clear();
-                        calMode = CalculatorMode.NORMAL;
-                        btnVar.setText("Var");
+                    try {
+                        String varGiven = expr[0].trim();
+                        if (solver.setVariable(varGiven, solver.evaluate(expr[1]))) {
+                            tfOutput.setText("Variable \"" + varGiven + "\" successfully assigned");
+                            tfInput.clear();
+                            calMode = CalculatorMode.NORMAL;
+                            btnVar.setText("Var");
+                        }
+                        else {
+                            tfOutput.setText("Invalid variable name, try again...");
+                        }
                     }
-                    else {
-                        tfOutput.setText("Invalid variable name, try again...");
+                    catch (ArithmeticException aerror) {
+                        tfOutput.setText("Invalid Expression, try again...");
                     }
-                }
-                catch (ArithmeticException aerror) {
-                    tfOutput.setText("Invalid Expression, try again...");
-                }
-                catch (NoSuchElementException verror) {
-                    tfOutput.setText("Non-existent variables referenced, try again...");
-                }
-                catch (Exception what) {
-                    tfOutput.setText("What? " + what.getMessage());
+                    catch (NoSuchElementException verror) {
+                        tfOutput.setText("Non-existent variables referenced, try again...");
+                    }
+                    catch (Exception what) {
+                        tfOutput.setText("What? " + what.getMessage());
+                    }
                 }
 
             }
@@ -372,9 +375,22 @@ public class App extends Application {
 
         // Pressing Return submits expression in normal mode
         scene.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                if (calMode == CalculatorMode.NORMAL)
-                    btnEqu.fire();
+            if (calMode == CalculatorMode.NORMAL) {
+                switch (e.getCode()) {
+                    case ENTER:
+                        btnEqu.fire();
+                        break;
+                }
+            }
+            else if (calMode == CalculatorMode.VAR) {
+                switch(e.getCode()) {
+                    case ENTER:
+                        btnVar.fire();
+                        break;
+                    case ESCAPE:
+                        btnAC.fire();
+                        break;
+                }
             }
         });
 
