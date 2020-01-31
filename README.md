@@ -38,6 +38,8 @@ mvn clean javafx:run
 - [x] Unary operators
 - [ ] Exponent representation
 - [x] Variable suppport
-- [ ] Functions
+- [x] Functions
+- [ ] Custom functions
 - [x] Support for multiple panels
+- [ ] Detailed custom numeric type implementation
 

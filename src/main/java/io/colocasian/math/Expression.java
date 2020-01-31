@@ -2,6 +2,7 @@ package io.colocasian.math;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +21,46 @@ public class Expression {
 
     private static boolean isVar(char c) {
         return ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '_'));
+    }
+
+    private static double solveFormula(String name, double[] params) throws NoSuchElementException {
+        switch (name + "#" + Integer.toString(params.length)) {
+            case "sin#1":
+                return Math.sin(params[0]);
+            case "cos#1":
+                return Math.cos(params[0]);
+            case "tan#1":
+                return Math.tan(params[0]);
+            case "asin#1":
+                return Math.asin(params[0]);
+            case "acos#1":
+                return Math.acos(params[0]);
+            case "atan#1":
+                return Math.atan(params[0]);
+
+            case "exp#1":
+                return Math.exp(params[0]);
+            case "expm1#1":
+                return Math.expm1(params[0]);
+            case "log#1":
+                return Math.log(params[0]);
+            case "log10#1":
+                return Math.log10(params[0]);
+            case "log1p#1":
+                return Math.log1p(params[0]);
+            case "log#2":
+                return (Math.log(params[0]) / Math.log(params[1]));
+
+            case "sqrt#1":
+                return Math.sqrt(params[0]);
+            case "cbrt#1":
+                return Math.cbrt(params[0]);
+            case "hypot#2":
+                return Math.hypot(params[0], params[1]);
+
+            default:
+                throw new NoSuchElementException("no such function yet");
+        }
     }
 
     private static double solvePostfix(ArrayList<Integer> postNote, ArrayList<Double> numList) {
@@ -163,11 +204,38 @@ public class Expression {
                     j++;
 
                 String varName = infix.substring(i, j);
-                if (!vars.containsKey(varName))
-                    throw new NoSuchElementException("no such variable exists");
-                postfix.add(-nums.size());
-                nums.add(vars.get(varName));
-                i = j-1;
+                if (j != infix.length() && infix.charAt(j) == '(') {
+                    int k = j+1;
+                    int funcLvl = 1;
+                    while (k != infix.length() && funcLvl != 0) {
+                        switch (infix.charAt(k)) {
+                            case '(':
+                                funcLvl++;
+                                break;
+                            case ')':
+                                funcLvl--;
+                                break;
+                        }
+                        k++;
+                    }
+                    String[] paramStr = infix.substring(j+1, k-1).split(",");
+                    int paramNum = paramStr.length;
+                    double[] paramDbl = new double[paramNum];
+
+                    for (int l = 0; l < paramNum; l++)
+                        paramDbl[l] = this.evaluate(paramStr[l]);
+
+                    postfix.add(-nums.size());
+                    nums.add(solveFormula(varName, paramDbl));
+                    i = k-1;
+                }
+                else {
+                    if (!vars.containsKey(varName))
+                        throw new NoSuchElementException("no such variable exists");
+                    postfix.add(-nums.size());
+                    nums.add(vars.get(varName));
+                    i = j-1;
+                }
 
                 nxtNum = false;
                 nxt1op = false;
