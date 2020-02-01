@@ -380,6 +380,10 @@ public class App extends Application {
                     case ENTER:
                         btnEqu.fire();
                         break;
+                    case U:
+                        if (e.isControlDown())
+                            btnVar.fire();
+
                 }
             }
             else if (calMode == CalculatorMode.VAR) {

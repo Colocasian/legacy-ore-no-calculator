@@ -1,9 +1,10 @@
 package io.colocasian.math;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Stack;
@@ -24,7 +25,7 @@ public class Expression {
     }
 
     private static double solveFormula(String name, double[] params) throws NoSuchElementException {
-        switch (name + "#" + Integer.toString(params.length)) {
+        switch (name + "#" + params.length) {
             case "sin#1":
                 return Math.sin(params[0]);
             case "cos#1":
@@ -63,61 +64,51 @@ public class Expression {
         }
     }
 
-    private static double solvePostfix(ArrayList<Integer> postNote, ArrayList<Double> numList) {
+    private static double solvePostfix(Queue<Character> postNote, Queue<Double> numList) {
         Stack<Double> boya = new Stack<>();
-        for (int i = 0; i < postNote.size(); i++) {
-            int at = postNote.get(i);
-            if (at <= 0)
-                boya.push(numList.get(-at));
-            else {
-                double a, b;
-                switch ((char)at) {
-                    case '^':
-                        b = boya.peek();
-                        boya.pop();
-                        a = boya.peek();
-                        boya.pop();
-                        boya.push(Math.pow(a, b));
-                        break;
+        while (!postNote.isEmpty()) {
+            char at = postNote.remove();
+            double a, b;
+            switch (at) {
 
-                    case '@':
-                        a = boya.peek();
-                        boya.pop();
-                        boya.push(-a);
-                        break;
+                case '\0':
+                    boya.push(numList.remove());
+                    break;
 
-                    case '*':
-                        b = boya.peek();
-                        boya.pop();
-                        a = boya.peek();
-                        boya.pop();
-                        boya.push(a * b);
-                        break;
+                case '^':
+                    b = boya.pop();
+                    a = boya.pop();
+                    boya.push(Math.pow(a, b));
+                    break;
 
-                    case '/':
-                        b = boya.peek();
-                        boya.pop();
-                        a = boya.peek();
-                        boya.pop();
-                        boya.push(a / b);
-                        break;
+                case '@':
+                    a = boya.pop();
+                    boya.push(-a);
+                    break;
 
-                    case '+':
-                        b = boya.peek();
-                        boya.pop();
-                        a = boya.peek();
-                        boya.pop();
-                        boya.push(a + b);
-                        break;
+                case '*':
+                    b = boya.pop();
+                    a = boya.pop();
+                    boya.push(a * b);
+                    break;
 
-                    case '-':
-                        b = boya.peek();
-                        boya.pop();
-                        a = boya.peek();
-                        boya.pop();
-                        boya.push(a - b);
-                        break;
-                }
+                case '/':
+                    b = boya.pop();
+                    a = boya.pop();
+                    boya.push(a / b);
+                    break;
+
+                case '+':
+                    b = boya.pop();
+                    a = boya.pop();
+                    boya.push(a + b);
+                    break;
+
+                case '-':
+                    b = boya.pop();
+                    a = boya.pop();
+                    boya.push(a - b);
+                    break;
             }
         }
 
@@ -127,11 +118,11 @@ public class Expression {
     public double evaluate(String infix) throws ArithmeticException, NoSuchElementException {
         if (infix.trim().isEmpty())
             throw new ArithmeticException("empty string passed");
-        ArrayList<Double> nums = new ArrayList<>();
+        Queue<Double> nums = new LinkedList<>();
         Stack<Character> chars = new Stack<>();
         chars.push('(');
         
-        ArrayList<Integer> postfix = new ArrayList<>();
+        Queue<Character> postfix = new LinkedList<>();
 
         boolean nxtNum = true;
         boolean nxt1op = true;
@@ -160,10 +151,8 @@ public class Expression {
                     throw new ArithmeticException("not expecting closing braces");
 
                 while (chars.peek() != '(' && chars.peek() != '[' &&
-                        chars.peek() != '{') {
-                    postfix.add(chars.peek().hashCode());
-                    chars.pop();
-                }
+                        chars.peek() != '{')
+                    postfix.add(chars.pop());
 
                 if ((at == ')' && chars.peek() != '(') || (at == ']' && chars.peek() != '[') || 
                         (at == '}' && chars.peek() != '{'))
@@ -185,7 +174,7 @@ public class Expression {
                 while (j < infix.length() && isNum(infix.charAt(j)))
                     j++;
 
-                postfix.add(-nums.size());
+                postfix.add('\0');
                 nums.add(Double.parseDouble(infix.substring(i, j)));
                 i = j-1;
 
@@ -225,14 +214,14 @@ public class Expression {
                     for (int l = 0; l < paramNum; l++)
                         paramDbl[l] = this.evaluate(paramStr[l]);
 
-                    postfix.add(-nums.size());
+                    postfix.add('\0');
                     nums.add(solveFormula(varName, paramDbl));
                     i = k-1;
                 }
                 else {
                     if (!vars.containsKey(varName))
                         throw new NoSuchElementException("no such variable exists");
-                    postfix.add(-nums.size());
+                    postfix.add('\0');
                     nums.add(vars.get(varName));
                     i = j-1;
                 }
@@ -259,10 +248,9 @@ public class Expression {
                     if (!nxt2op)
                         throw new ArithmeticException("not expecting bin operator");
                     while (chars.peek() == '^' || chars.peek() == '@' || chars.peek() == '*' ||
-                            chars.peek() == '/') {
-                        postfix.add(chars.peek().hashCode());
-                        chars.pop();
-                    }
+                            chars.peek() == '/')
+                        postfix.add(chars.pop());
+
                     chars.push(at);
 
                     nxtNum = true;
@@ -274,10 +262,9 @@ public class Expression {
                 else if (at == '+' || at == '-') {
                     if (nxt2op) {
                         while (chars.peek() == '^' || chars.peek() == '@' || chars.peek() == '*' ||
-                                chars.peek() == '/' || chars.peek() == '+' || chars.peek() == '-') {
-                            postfix.add(chars.peek().hashCode());
-                            chars.pop();
-                        }
+                                chars.peek() == '/' || chars.peek() == '+' || chars.peek() == '-')
+                            postfix.add(chars.pop());
+
                         chars.push(at);
 
                         nxtNum = true;
@@ -290,10 +277,9 @@ public class Expression {
                         if (!nxt1op)
                             throw new ArithmeticException("not expecting operator");
                         if (at == '-') {
-                            while (chars.peek() == '^') {
-                                postfix.add(chars.peek().hashCode());
-                                chars.pop();
-                            }
+                            while (chars.peek() == '^')
+                                postfix.add(chars.pop());
+
                             chars.push('@');
                         }
 
@@ -311,10 +297,8 @@ public class Expression {
         if (lvl != 0)
             throw new ArithmeticException("unbalanced braces");
 
-        while (chars.peek() != '(') {
-            postfix.add(chars.peek().hashCode());
-            chars.pop();
-        }
+        while (chars.peek() != '(')
+            postfix.add(chars.pop());
 
         return solvePostfix(postfix, nums);
     }
