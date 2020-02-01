@@ -17,12 +17,19 @@ import javafx.stage.Stage;
 
 /**
  * JavaFX App
+ * @author Rishvic Pushpakaran (@Colocasian)
  */
 public class App extends Application {
+    /**
+     * Enumeration describing which mode calculator is in.
+     */
     private enum CalculatorMode {
         NORMAL, VAR;
     }
 
+    /**
+     * Enumeration describing which mode central grid is in.
+     */
     private enum GridMode {
         REG, SCI;
     }

@@ -9,21 +9,49 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Stack;
 
+/**
+ * A class implementing methods for evaluating mathematical expressions, with
+ * some inbuilt functions, such as variable storage, functions, etc.
+ * @author Rishvic Pushpakaran (@Colocasian)
+ */
 public class Expression {
     private HashMap<String, Double> vars;
 
+    /**
+     * Constructor for expression class. Initializes variable register.
+     */
     public Expression() {
         this.vars = new HashMap<>();
     }
 
+    /**
+     * Method specifying whether a character can be part of a numeric literal.
+     * @param c the character to be tested
+     * @return boolean Whether the provided character can be part of numeric literal
+     */
     private static boolean isNum(char c) {
         return ((c >= '0' && c <= '9') || c == '.');
     }
 
+    /**
+     * Method specifying whether a charater can be first character of a variable name. Returns true
+     * if yes, else false.
+     * @param c the character to be tested
+     * @return whether the given character can be first character of a variable name
+     */
     private static boolean isVar(char c) {
         return ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '_'));
     }
 
+    /**
+     * Method used to solve a given formula, using the parameters provided, and then return the
+     * resulting solution. Throws NoSuchElementException, if provided formula is not defined.
+     * Formulae can be overloaded, given they have different number of parameters.
+     * @param name the name of the formula
+     * @param params the provided parameters
+     * @return the answer given by the formula
+     * @throws NoSuchElementException if given formula description doesn't exist
+     */
     private static double solveFormula(String name, double[] params) throws NoSuchElementException {
         switch (name + "#" + params.length) {
             case "sin#1":
@@ -64,6 +92,14 @@ public class Expression {
         }
     }
 
+    /**
+     * Method used to solve postfix expressions. Assumes that the given postfix expression and the
+     * provided numList is correct, so caution is necessary. When null character is present in the
+     * postfix expression, it is replaced by the next number in the queue.
+     * @param postNote the postfix expression in Queue form
+     * @param numList the Queue of all the numbers used in the expression
+     * @return the solution of the postfix expression
+     */
     private static double solvePostfix(Queue<Character> postNote, Queue<Double> numList) {
         Stack<Double> boya = new Stack<>();
         while (!postNote.isEmpty()) {
@@ -115,6 +151,14 @@ public class Expression {
         return boya.peek();
     }
 
+    /**
+     * Public method used to evaluate any infix expression in string form. Implemented many checks
+     * within the method to prevent parsing of incorrect expressions.
+     * @param infix the infix expression
+     * @return the resulting answer from the infix expression
+     * @throws ArithmeticException if the provided infix expression has incorrect format
+     * @throws NoSuchElementException if any included variable is not defined
+     */
     public double evaluate(String infix) throws ArithmeticException, NoSuchElementException {
         if (infix.trim().isEmpty())
             throw new ArithmeticException("empty string passed");
@@ -303,6 +347,14 @@ public class Expression {
         return solvePostfix(postfix, nums);
     }
 
+    /**
+     * Public method used to define a variable with a corresponding value. Returns true if given
+     * variable name is valid and assignment is done. If given name is invalid, doesn't assign the
+     * value and returns false.
+     * @param name the variable name to be assigned
+     * @param num the variable value to be assigned
+     * @return whether assignment was successful or not
+     */
     public boolean setVariable(String name, double num) {
         if (name.isEmpty() || (!isVar(name.charAt(0))))
             return false;
